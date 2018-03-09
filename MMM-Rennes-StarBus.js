@@ -33,21 +33,32 @@ Module.register("MMM-Rennes-StarBus", {
 	getDom: function() {
 		var self = this;
 
-		// create element wrapper for show into the module
-		var wrapper = document.createElement("div");
-		// If this.dataRequest is not empty
-		if (this.dataRequest) {
-			this.dataRequest.forEach(function(data, i) {
-				var wrapperDataRequest = document.createElement("div");
-				
-				wrapperDataRequest.innerHTML = data;
-				wrapperDataRequest.className = "small";
-	
-				wrapper.appendChild(wrapperDataRequest);
-			});
+		// create element wrapper for show data into the module
+        var wrapper = document.createElement("table");
 
-			
-		}
+        // If data are not empty
+        if (this.dataRequest) {
+			this.dataRequest.records.forEach(function(data, i) {
+                var lineWrapper = document.createElement("tr");
+
+                var wrapperArrivee = document.createElement("td");				
+				wrapperArrivee.innerHTML = formatTimeString(data.fields.arrivee);
+				wrapperArrivee.className = "small";	
+                wrapper.appendChild(wrapperArrivee);
+
+                var wrapperDestination = document.createElement("td");				
+				wrapperDestination.innerHTML = data.fields.destination;
+				wrapperDestination.className = "small";	
+                wrapper.appendChild(wrapperDestination);
+
+                var wrapperNomArret = document.createElement("td");				
+				wrapperNomArret.innerHTML = data.fields.nomarret;
+				wrapperNomArret.className = "small";	
+                wrapper.appendChild(wrapperNomArret);
+                                
+                wrapper.appendChild(lineWrapper);
+			});			
+        }
 		
 		return wrapper;
 	},
