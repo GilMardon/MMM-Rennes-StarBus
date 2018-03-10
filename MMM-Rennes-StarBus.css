@@ -2,3 +2,21 @@
  * Copyright (C) 2018 Gil Mardon
  * https://github.com/GilMardon/MMM-Rennes-StarBus
  * License: GNU General Public License */
+
+td.nomcourtligne {
+     padding-right: 20px;
+     font-weight: bold;
+ }
+
+td.arrivee {
+    padding-right: 20px;
+}
+
+td.nomarret {
+    padding-right: 20px;
+}
+
+td.vers {
+    font-size: 70%;
+    padding-right: 20px;
+}

@@ -4,107 +4,118 @@
  * License: GNU General Public License */
 
 Module.register("MMM-Rennes-StarBus", {
-	defaults: {
-		timeFormat: config.timeFormat,
-		maxEntries: 5,
-		updateInterval: 60000,
-		retryDelay: 5000
-	},
+    defaults: {
+        timeFormat: config.timeFormat,
+        maxEntries: 5,
+        updateInterval: 60000,
+        retryDelay: 5000
+    },
 
-	requiresVersion: "2.1.0", // Required version of MagicMirror
+    requiresVersion: "2.1.0", // Required version of MagicMirror
 
-	start: function() {
-		var self = this;
-		var dataRequest = null;
-		var dataNotification = null;
+    start: function () {
+        var self = this;
+        var dataRequest = null;
+        var dataNotification = null;
 
-		//Flag for check if module is loaded
-		//this.loaded = false;
-		console.log(this.config.timeFormat);
-		this.sendSocketNotification("CONFIG", this.config);
+        //Flag for check if module is loaded
+        //this.loaded = false;
+        console.log(this.config.timeFormat);
+        this.sendSocketNotification("CONFIG", this.config);
 
-		// Schedule update timer.
-		setInterval(function() {
-			self.sendSocketNotification("GET_DATA");
-		}, this.config.updateInterval);
-		
-	},	
+        // Schedule update timer.
+        setInterval(function () {
+            self.sendSocketNotification("GET_DATA");
+        }, this.config.updateInterval);
 
-	getDom: function() {
-		var self = this;
+    },
+    formatTimeString: function (date) {
+        var m = moment(date);
 
-		// create element wrapper for show data into the module
+        var hourSymbol = "HH";
+        var periodSymbol = "";
+
+        if (this.config.timeFormat !== 24) {
+            hourSymbol = "h";
+            periodSymbol = " A";
+        }
+
+        var format = hourSymbol + ":mm" + periodSymbol;
+
+        return m.format(format);
+    },
+    getDom: function () {
+        var self = this;
+
+        // create element wrapper for show data into the module
         var wrapper = document.createElement("table");
 
         // If data are not empty
         if (this.dataRequest) {
-			this.dataRequest.records.forEach(function(data, i) {
+            this.dataRequest.records.forEach(function (data, i) {
                 var lineWrapper = document.createElement("tr");
 
-                var wrapperArrivee = document.createElement("td");				
-				wrapperArrivee.innerHTML = formatTimeString(data.fields.arrivee);
-				wrapperArrivee.className = "small";	
+                var wrapperArrivee = document.createElement("td");
+                wrapperArrivee.innerHTML = data.fields.nomcourtligne;
+                wrapperArrivee.className = "nomcourtligne";
                 wrapper.appendChild(wrapperArrivee);
 
-                var wrapperDestination = document.createElement("td");				
-				wrapperDestination.innerHTML = data.fields.destination;
-				wrapperDestination.className = "small";	
+                var wrapperArrivee = document.createElement("td");
+                wrapperArrivee.innerHTML = self.formatTimeString(data.fields.arrivee);
+                wrapperArrivee.className = "arrivee";
+                wrapper.appendChild(wrapperArrivee);
+
+
+                var wrapperNomArret = document.createElement("td");
+                wrapperNomArret.innerHTML = data.fields.nomarret;
+                wrapperNomArret.className = "nomarret";
+                wrapper.appendChild(wrapperNomArret);
+
+                var wrapperDestination = document.createElement("td");
+                wrapperDestination.innerHTML = "vers";
+                wrapperDestination.className = "vers";
                 wrapper.appendChild(wrapperDestination);
 
-                var wrapperNomArret = document.createElement("td");				
-				wrapperNomArret.innerHTML = data.fields.nomarret;
-				wrapperNomArret.className = "small";	
-                wrapper.appendChild(wrapperNomArret);
-                                
+                var wrapperDestination = document.createElement("td");
+                wrapperDestination.innerHTML = data.fields.destination;
+                wrapperDestination.className = "destination";
+                wrapper.appendChild(wrapperDestination);
+
                 wrapper.appendChild(lineWrapper);
-			});			
+            });
         }
-		
-		return wrapper;
-	},
 
-	getScripts: function() {
-		return ["moment.js"];
-	},
+        return wrapper;
+    },
 
-	getStyles: function () {
-		return [
-			"MMM-Rennes-StarBus.css",
-		];
-	},
+    getScripts: function () {
+        return ["moment.js"];
+    },
 
-	processData: function(data) {
-		var self = this;
-		this.dataRequest = data;
-		self.updateDom(self.config.animationSpeed);
-	},
+    getStyles: function () {
+        return [
+            "MMM-Rennes-StarBus.css",
+        ];
+    },
+
+    processData: function (data) {
+        var self = this;
+        this.dataRequest = data;
+        self.updateDom(self.config.animationSpeed);
+    },
 
 
-	formatTimeString: function(date) {
-		var m = moment(date);
 
-		var hourSymbol = "HH";
-		var periodSymbol = "";
-
-		if (this.config.timeFormat !== 24) {
-			hourSymbol = "h";
-			periodSymbol = " A";
-		}
-
-		var format = hourSymbol + ":mm" + periodSymbol;
-
-		return m.format(format);
-	},
 
     /**
      * socketNotificationReceived from helper
      * Processes messages from node_helper
      */
-	socketNotificationReceived: function (notification, message) {
-		if (notification === "DATA") {
-			this.processData(message);
-		} else if (notification === "ERROR") {
-			self.updateDom(self.config.animationSpeed);
-		} 
-	},
+    socketNotificationReceived: function (notification, message) {
+        if (notification === "DATA") {
+            this.processData(message);
+        } else if (notification === "ERROR") {
+            self.updateDom(self.config.animationSpeed);
+        }
+    },
 });
