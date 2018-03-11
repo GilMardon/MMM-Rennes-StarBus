@@ -4,12 +4,11 @@
  * License: GNU General Public License */
 
 var NodeHelper = require("node_helper");
-//var http = require('http');
 const restling = require('restling');
 
 module.exports = NodeHelper.create({
 
-	// Override socketNotificationReceived method.
+    // Override socketNotificationReceived method.
 
 	/* socketNotificationReceived(notification, payload)
 	 * This method is called when a socket notification arrives.
@@ -17,40 +16,20 @@ module.exports = NodeHelper.create({
 	 * argument notification string - The identifier of the noitication.
 	 * argument payload mixed - The payload of the notification.
 	 */
-	socketNotificationReceived: function(notification, payload) {
-		var self = this;
-		
-		if (notification === "CONFIG") {
-			self.config = payload;
-			self.getData();
+    socketNotificationReceived: function (notification, payload) {
+        var self = this;
 
-			setInterval(function() {
-				self.getData();
-			}, self.config.updateInterval);
-		} else if (notification === "GET_DATA") {
-			self.getData();
-		}
-	},
+        if (notification === "CONFIG") {
+            self.config = payload;
+            self.getData();
 
-	
-
-	/* scheduleUpdate()
-	 * Schedule next update.
-	 *
-	 * argument delay number - Milliseconds before next update.
-	 *  If empty, this.config.updateInterval is used.
-	 */
-	/*scheduleUpdate: function(delay) {
-		var nextLoad = this.config.updateInterval;
-		if (typeof delay !== "undefined" && delay >= 0) {
-			nextLoad = delay;
-		}
-		nextLoad = nextLoad ;
-		var self = this;
-		setTimeout(function() {
-			self.getData();
-		}, nextLoad);
-	},*/
+            setInterval(function () {
+                self.getData();
+            }, self.config.updateInterval);
+        } else if (notification === "GET_DATA") {
+            self.getData();
+        }
+    },
 
 	/*
 	 * getData
@@ -58,31 +37,36 @@ module.exports = NodeHelper.create({
 	 * get a URL request
 	 *
 	 */
-	getData: function() {
+    getData: function () {
         var self = this;
         let RestArgs = {
             rejectUnauthorized: false
         };
+        console.log(self.config);
 
-        var urlApi ="https://data.rennesmetropole.fr/api/records/1.0/search/?dataset=prochains-passages-des-lignes-de-bus-du-reseau-star-en-temps-reel&sort=nomcourtligne&facet=idligne&facet=nomcourtligne&facet=sens&facet=destination&facet=precision&facet=nomarret&refine.idligne=0004&refine.nomarret=Bois+Labb%C3%A9&refine.destination=ZA+Saint-Sulpice"
-        
+        var urlApi = "https://data.rennesmetropole.fr/api/records/1.0/search/?dataset=prochains-passages-des-lignes-de-bus-du-reseau-star-en-temps-reel&sort=nomcourtligne&facet=idligne&facet=nomcourtligne&facet=sens&facet=destination&facet=precision&facet=nomarret&refine.idligne=" +
+            self.config.lines[0].line +
+            "&refine.nomarret=" +
+            self.config.lines[0].stop +
+            "&refine.destination=" +
+            self.config.lines[0].destination;
+
         console.log(urlApi);
 
         return restling.get(urlApi, RestArgs).then(function (response) {
-			if (response.response.statusCode === 401) {
-				self.sendSocketNotification("ERROR", this.status);
-				console.log(self.name, this.status);
-				//retry = false;
-			} else if (response.response.statusCode != 200) {
-				console.log(self.name, "Could not load data.");
-				//self.scheduleUpdate((self.loaded) ? -1 : self.config.retryDelay);
-			} 
+            if (response.response.statusCode === 401) {
+                self.sendSocketNotification("ERROR", this.status);
+                console.log(self.name, this.status);
+            } else if (response.response.statusCode != 200) {
+                console.log(self.name, "Could not load data.");
+            }
+            console.log(response.data);
 
-            return 	self.sendSocketNotification("DATA", response.data);
+            return self.sendSocketNotification("DATA", response.data);
 
-		}).catch(function(e) {
-			console.log("Communications error:", e.message);
-		});
-	}
+        }).catch(function (e) {
+            console.log("Communications error:", e.message);
+        });
+    }
 
 });

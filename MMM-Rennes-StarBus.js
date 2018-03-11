@@ -18,9 +18,6 @@ Module.register("MMM-Rennes-StarBus", {
         var dataRequest = null;
         var dataNotification = null;
 
-        //Flag for check if module is loaded
-        //this.loaded = false;
-        console.log(this.config.timeFormat);
         this.sendSocketNotification("CONFIG", this.config);
 
         // Schedule update timer.
@@ -47,7 +44,7 @@ Module.register("MMM-Rennes-StarBus", {
     getDom: function () {
         var self = this;
 
-        // create element wrapper for show data into the module
+        // Create an element wrapper for display data
         var wrapper = document.createElement("table");
 
         // If data are not empty
@@ -64,7 +61,6 @@ Module.register("MMM-Rennes-StarBus", {
                 wrapperArrivee.innerHTML = self.formatTimeString(data.fields.arrivee);
                 wrapperArrivee.className = "arrivee";
                 wrapper.appendChild(wrapperArrivee);
-
 
                 var wrapperNomArret = document.createElement("td");
                 wrapperNomArret.innerHTML = data.fields.nomarret;
@@ -103,9 +99,6 @@ Module.register("MMM-Rennes-StarBus", {
         this.dataRequest = data;
         self.updateDom(self.config.animationSpeed);
     },
-
-
-
 
     /**
      * socketNotificationReceived from helper
