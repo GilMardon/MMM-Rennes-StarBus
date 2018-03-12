@@ -3,20 +3,32 @@
  * https://github.com/GilMardon/MMM-Rennes-StarBus
  * License: GNU General Public License */
 
-td.nomcourtligne {
+
+td {
+    line-height:1;
+}
+
+ td.nomcourtligne {
      padding-right: 20px;
      font-weight: bold;
+     font-size: 22px;
  }
 
 td.arrivee {
     padding-right: 20px;
+    font-size: 22px;
 }
 
 td.nomarret {
     padding-right: 20px;
+    font-size: 22px;
 }
 
 td.vers {
-    font-size: 70%;
+    font-size: 15px;
     padding-right: 20px;
+}
+
+td.destination {
+    font-size: 22px;
 }
