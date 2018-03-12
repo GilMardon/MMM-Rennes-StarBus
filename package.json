@@ -16,6 +16,8 @@
     "time-grunt": "latest"
   },
   "dependencies": {
+    "bluebird": "^3.5.1",
+    "lodash": "^4.17.5",
     "restling": "^0.9.1"
   }
 }

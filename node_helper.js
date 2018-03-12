@@ -5,6 +5,8 @@
 
 var NodeHelper = require("node_helper");
 const restling = require('restling');
+const Promise = require('bluebird');
+const _ = require('lodash');
 
 module.exports = NodeHelper.create({
 
@@ -38,35 +40,47 @@ module.exports = NodeHelper.create({
 	 *
 	 */
     getData: function () {
-        var self = this;
+        let self = this;
+        let returnedData = {
+            nhits : 0,
+            records : []
+        };
         let RestArgs = {
             rejectUnauthorized: false
         };
-        console.log(self.config);
 
-        var urlApi = "https://data.rennesmetropole.fr/api/records/1.0/search/?dataset=prochains-passages-des-lignes-de-bus-du-reseau-star-en-temps-reel&sort=nomcourtligne&facet=idligne&facet=nomcourtligne&facet=sens&facet=destination&facet=precision&facet=nomarret&refine.idligne=" +
-            self.config.lines[0].line +
+        return Promise.each(self.config.lines, function(line) {
+            let urlApi = "https://data.rennesmetropole.fr/api/records/1.0/search/?dataset=prochains-passages-des-lignes-de-bus-du-reseau-star-en-temps-reel&sort=nomcourtligne&facet=idligne&facet=nomcourtligne&facet=sens&facet=destination&facet=precision&facet=nomarret&refine.idligne=" +
+            line.line +
             "&refine.nomarret=" +
-            self.config.lines[0].stop +
+            line.stop +
             "&refine.destination=" +
-            self.config.lines[0].destination;
+            line.destination;
 
-        console.log(urlApi);
+            return restling.get(urlApi, RestArgs).then(function (response) {
+                if (response.response.statusCode === 401) {
+                    self.sendSocketNotification("ERROR", this.status);
+                    console.log(self.name, this.status);
+                } else if (response.response.statusCode != 200) {
+                    console.log(self.name, "Could not load data.");
+                }
+                delete response.data.parameters;
+                delete response.data.facet_groups;
+                
+                returnedData.nhits += response.data.nhits;
+                returnedData.records = returnedData.records.concat(response.data.records);
+                
+                return Promise.resolve();
+            }).then(function() {            
+                let sortedData = { 
+                    records : _.sortBy(returnedData.records, 'fields.arrivee'),
+                    nhits : returnedData.nhits 
+                };
 
-        return restling.get(urlApi, RestArgs).then(function (response) {
-            if (response.response.statusCode === 401) {
-                self.sendSocketNotification("ERROR", this.status);
-                console.log(self.name, this.status);
-            } else if (response.response.statusCode != 200) {
-                console.log(self.name, "Could not load data.");
-            }
-            console.log(response.data);
-
-            return self.sendSocketNotification("DATA", response.data);
-
-        }).catch(function (e) {
-            console.log("Communications error:", e.message);
+                return self.sendSocketNotification("DATA", sortedData);
+            }).catch(function (e) {
+                console.log("Communications error:", e.message);
+            });
         });
     }
-
 });
